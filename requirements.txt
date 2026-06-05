@@ -1,0 +1,36 @@
+# video_watermark — Python dependencies
+# Tested on Python 3.12.  Requires Python >= 3.9.
+#
+# Install core dependencies:
+#   pip install -r requirements.txt
+#
+# Install with optional ML (TrustMark) support:
+#   pip install -r requirements.txt -r requirements-ml.txt
+
+# ── Video I/O ──────────────────────────────────────────────────────────────
+av>=13.0,<18.0              # PyAV — FFmpeg bindings for frame decode/re-encode
+                            # Tested: 17.0.1
+
+# ── Numerics ───────────────────────────────────────────────────────────────
+numpy>=1.24,<3.0            # Array ops, packbits/unpackbits
+                            # Tested: 2.4.4
+scipy>=1.10,<2.0            # scipy.fft.dctn / idctn (2-D DCT-II/III)
+                            # Tested: 1.17.1
+
+# ── Error-correction coding ────────────────────────────────────────────────
+bchlib==2.1.3               # BCH(127, t=11) ECC for DCT pipeline
+                            # Pin exact version — API changed between 1.x and 2.x
+
+# ── Image quality metrics ──────────────────────────────────────────────────
+scikit-image>=0.20,<1.0     # PSNR, SSIM (skimage.metrics)
+                            # Tested: 0.26.0
+
+# ── Image I/O (TrustMark adapter) ─────────────────────────────────────────
+Pillow>=9.0,<13.0           # PIL Image — frame↔TrustMark bridge
+                            # Tested: 12.1.1
+
+# ── Progress + plotting ────────────────────────────────────────────────────
+tqdm>=4.60,<5.0             # Progress bars in encode/decode loops
+                            # Tested: 4.68.1
+matplotlib>=3.7,<4.0        # Comparison plots (report.py)
+                            # Tested: 3.10.8

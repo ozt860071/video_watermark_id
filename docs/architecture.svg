@@ -1,0 +1,149 @@
+<svg width="680" viewBox="0 0 680 620" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>Video watermarking benchmark architecture</title>
+  <desc>Two parallel pipelines — DCT frequency-domain and TrustMark ML-based — share a common input video and feed into a unified benchmark harness measuring PSNR, SSIM, and BER.</desc>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#BA7517" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#3B6D11" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <style>
+    text { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
+    .title  { font-size: 13px; font-weight: 600; fill: #2C2C2A; }
+    .sub    { font-size: 11px; font-weight: 400; fill: #5F5E5A; }
+    .label  { font-size: 11px; font-weight: 500; fill: #444441; }
+    .lane   { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; fill: #888780; }
+
+    .box-gray   { fill: #F1EFE8; stroke: #5F5E5A; }
+    .box-teal   { fill: #E1F5EE; stroke: #0F6E56; }
+    .box-amber  { fill: #FAEEDA; stroke: #854F0B; }
+    .box-purple { fill: #EEEDFE; stroke: #534AB7; }
+    .box-green  { fill: #EAF3DE; stroke: #3B6D11; }
+
+    .title-gray   { fill: #2C2C2A; }
+    .title-teal   { fill: #085041; }
+    .title-amber  { fill: #633806; }
+    .title-purple { fill: #3C3489; }
+    .title-green  { fill: #27500A; }
+
+    .sub-gray   { fill: #5F5E5A; }
+    .sub-teal   { fill: #0F6E56; }
+    .sub-amber  { fill: #854F0B; }
+    .sub-purple { fill: #534AB7; }
+    .sub-green  { fill: #3B6D11; }
+
+    .edge      { stroke: #B4B2A9; stroke-width: 1; fill: none; }
+    .edge-teal { stroke: #1D9E75; stroke-width: 1; fill: none; }
+    .edge-amb  { stroke: #BA7517; stroke-width: 1; fill: none; }
+    .edge-pur  { stroke: #534AB7; stroke-width: 1; fill: none; }
+    .edge-grn  { stroke: #3B6D11; stroke-width: 1; fill: none; }
+    .dash      { stroke: #B4B2A9; stroke-width: 0.8; fill: none; stroke-dasharray: 5 3; }
+  </style>
+
+  <!-- ══════════════ INPUT ══════════════ -->
+  <rect x="230" y="20" width="220" height="44" rx="8" stroke-width="0.5" class="box-gray"/>
+  <text x="340" y="38" text-anchor="middle" class="title title-gray">Input MP4</text>
+  <text x="340" y="54" text-anchor="middle" class="sub sub-gray">H.264 or H.265</text>
+
+  <!-- fork -->
+  <line x1="340" y1="64" x2="340" y2="84" class="edge" marker-end="url(#arr)"/>
+  <line x1="340" y1="84" x2="155" y2="84" class="edge"/>
+  <line x1="340" y1="84" x2="525" y2="84" class="edge"/>
+  <line x1="155" y1="84" x2="155" y2="106" class="edge" marker-end="url(#arr)"/>
+  <line x1="525" y1="84" x2="525" y2="106" class="edge" marker-end="url(#arr)"/>
+
+  <!-- ══════════════ LEFT LANE (DCT) ══════════════ -->
+  <text x="155" y="99" text-anchor="middle" class="lane">DCT  PIPELINE</text>
+
+  <!-- Frame extract -->
+  <rect x="60" y="106" width="190" height="50" rx="8" stroke-width="0.5" class="box-teal"/>
+  <text x="155" y="124" text-anchor="middle" class="title title-teal">Frame extractor</text>
+  <text x="155" y="141" text-anchor="middle" class="sub sub-teal">PyAV decode → uint8 RGB</text>
+  <line x1="155" y1="156" x2="155" y2="176" class="edge-teal" marker-end="url(#arr-teal)"/>
+
+  <!-- YCbCr -->
+  <rect x="60" y="176" width="190" height="50" rx="8" stroke-width="0.5" class="box-teal"/>
+  <text x="155" y="194" text-anchor="middle" class="title title-teal">RGB → YCbCr</text>
+  <text x="155" y="211" text-anchor="middle" class="sub sub-teal">embed luma (Y) only</text>
+  <line x1="155" y1="226" x2="155" y2="246" class="edge-teal" marker-end="url(#arr-teal)"/>
+
+  <!-- DCT -->
+  <rect x="60" y="246" width="190" height="50" rx="8" stroke-width="0.5" class="box-amber"/>
+  <text x="155" y="264" text-anchor="middle" class="title title-amber">8×8 block DCT-II</text>
+  <text x="155" y="281" text-anchor="middle" class="sub sub-amber">ortho normalisation</text>
+  <line x1="155" y1="296" x2="155" y2="316" class="edge-amb" marker-end="url(#arr-amber)"/>
+
+  <!-- BCH encode -->
+  <rect x="60" y="316" width="190" height="50" rx="8" stroke-width="0.5" class="box-amber"/>
+  <text x="155" y="334" text-anchor="middle" class="title title-amber">BCH(127, t=11) encode</text>
+  <text x="155" y="351" text-anchor="middle" class="sub sub-amber">56 bits → 127 chips</text>
+  <line x1="155" y1="366" x2="155" y2="386" class="edge-amb" marker-end="url(#arr-amber)"/>
+
+  <!-- QIM embed -->
+  <rect x="60" y="386" width="190" height="50" rx="8" stroke-width="0.5" class="box-amber"/>
+  <text x="155" y="404" text-anchor="middle" class="title title-amber">QIM coefficient embed</text>
+  <text x="155" y="421" text-anchor="middle" class="sub sub-amber">mid-band AC, Δ = 30</text>
+  <line x1="155" y1="436" x2="155" y2="456" class="edge-amb" marker-end="url(#arr-amber)"/>
+
+  <!-- IDCT + repack -->
+  <rect x="60" y="456" width="190" height="50" rx="8" stroke-width="0.5" class="box-teal"/>
+  <text x="155" y="474" text-anchor="middle" class="title title-teal">IDCT + YCbCr → RGB</text>
+  <text x="155" y="491" text-anchor="middle" class="sub sub-teal">reconstruct watermarked frame</text>
+  <line x1="155" y1="506" x2="155" y2="526" class="edge" marker-end="url(#arr)"/>
+
+  <!-- ══════════════ RIGHT LANE (TrustMark) ══════════════ -->
+  <text x="525" y="99" text-anchor="middle" class="lane">TRUSTMARK  PIPELINE</text>
+
+  <!-- Frame extract -->
+  <rect x="430" y="106" width="190" height="50" rx="8" stroke-width="0.5" class="box-purple"/>
+  <text x="525" y="124" text-anchor="middle" class="title title-purple">Frame extractor</text>
+  <text x="525" y="141" text-anchor="middle" class="sub sub-purple">PyAV decode → PIL Image</text>
+  <line x1="525" y1="156" x2="525" y2="176" class="edge-pur" marker-end="url(#arr-purple)"/>
+
+  <!-- TrustMark model -->
+  <rect x="430" y="176" width="190" height="50" rx="8" stroke-width="0.5" class="box-purple"/>
+  <text x="525" y="194" text-anchor="middle" class="title title-purple">TrustMark encoder</text>
+  <text x="525" y="211" text-anchor="middle" class="sub sub-purple">ResNet, 256×256 residual</text>
+  <line x1="525" y1="226" x2="525" y2="246" class="edge-pur" marker-end="url(#arr-purple)"/>
+
+  <!-- BCH_5 -->
+  <rect x="430" y="246" width="190" height="50" rx="8" stroke-width="0.5" class="box-purple"/>
+  <text x="525" y="264" text-anchor="middle" class="title title-purple">BCH_5 ECC (internal)</text>
+  <text x="525" y="281" text-anchor="middle" class="sub sub-purple">56 bits, 5-flip correction</text>
+  <line x1="525" y1="296" x2="525" y2="316" class="edge-pur" marker-end="url(#arr-purple)"/>
+
+  <!-- Blend -->
+  <rect x="430" y="316" width="190" height="50" rx="8" stroke-width="0.5" class="box-purple"/>
+  <text x="525" y="334" text-anchor="middle" class="title title-purple">Blend residual</text>
+  <text x="525" y="351" text-anchor="middle" class="sub sub-purple">scale to frame resolution</text>
+  <line x1="525" y1="366" x2="525" y2="526" class="edge" marker-end="url(#arr)"/>
+
+  <!-- ══════════════ CODEC ROUND-TRIP ══════════════ -->
+  <rect x="160" y="526" width="360" height="44" rx="8" stroke-width="0.5" class="box-gray"/>
+  <text x="340" y="544" text-anchor="middle" class="title title-gray">H.264 / H.265 re-encode</text>
+  <text x="340" y="560" text-anchor="middle" class="sub sub-gray">PyAV — CRF 23 default</text>
+  <line x1="340" y1="570" x2="340" y2="590" class="edge" marker-end="url(#arr)"/>
+
+  <!-- ══════════════ BENCHMARK HARNESS ══════════════ -->
+  <rect x="70" y="590" width="540" height="0" rx="8" class="dash"/>
+  <rect x="70" y="588" width="540" height="0" rx="8" class="dash"/>
+
+  <!-- benchmark box visual below codec -->
+  <rect x="100" y="590" width="480" height="50" rx="8" stroke-width="0.5" class="box-green"/>
+  <text x="340" y="608" text-anchor="middle" class="title title-green">Benchmark harness</text>
+  <text x="340" y="625" text-anchor="middle" class="sub sub-green">PSNR · SSIM · BER · per-bit error rate</text>
+
+</svg>

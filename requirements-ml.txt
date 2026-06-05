@@ -1,0 +1,26 @@
+# requirements-ml.txt — optional TrustMark (ML) dependencies
+#
+# Install after requirements.txt:
+#   pip install -r requirements.txt -r requirements-ml.txt
+#
+# Model weights (~200 MB) are downloaded automatically on first use.
+# TrustMark is MIT-licensed: https://github.com/adobe/trustmark
+#
+# ── CPU-only (works everywhere, slower) ───────────────────────────────────
+trustmark>=0.1              # Adobe TrustMark watermarking model
+                            # Pulls in torch, torchvision as transitive deps
+
+# ── GPU (CUDA) — uncomment and replace the block above ────────────────────
+# Install PyTorch with CUDA *before* trustmark so pip doesn't pull CPU torch:
+#
+#   conda install pytorch torchvision pytorch-cuda=12.8 -c pytorch -c nvidia
+#   pip install trustmark
+#
+# Or with pip (adjust cu128 to match your CUDA version):
+#
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#   pip install trustmark
+#
+# Verified CUDA versions: 11.8, 12.1, 12.8
+# Typical encode time with CUDA: ~30 ms/frame (RTX 3070)
+# Typical encode time on CPU:    ~500 ms/frame
