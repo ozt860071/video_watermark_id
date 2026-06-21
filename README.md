@@ -95,9 +95,13 @@ python -m video_watermark.benchmark.run [options]
 
 #### Payload
 
+Mutually exclusive — pick one form. If neither is given, the default
+`0xDEADBEEFCAFEBA` is used.
+
 | Option | Default | Description |
 |---|---|---|
 | `--payload-int HEX` | `0xDEADBEEFCAFEBA` | 56-bit payload as a hex literal. Use `0x` prefix. Must fit in 7 bytes (≤ `0xFFFFFFFFFFFFFF`). |
+| `--payload-text STR` | — | ASCII payload, up to 7 chars. Packed big-endian and NUL-padded on the right (`"HI"` → `0x4849000000000000`). |
 
 #### Frame selection
 
@@ -159,6 +163,11 @@ python -m video_watermark.benchmark.run \
     --input clip.mp4 \
     --payload-int 0xCAFEBABEDEAD42 \
     --eval-every-nth 3
+
+# ASCII payload (up to 7 chars)
+python -m video_watermark.benchmark.run \
+    --input clip.mp4 \
+    --payload-text "ACME123"
 
 # Both methods, near-lossless re-encode (isolate watermark distortion from codec)
 python -m video_watermark.benchmark.run \

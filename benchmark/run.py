@@ -311,14 +311,37 @@ class BenchmarkRunner:
 # CLI
 # ---------------------------------------------------------------------------
 
+_PAYLOAD_BYTES = 7  # 56 bits
+
+
+def _payload_text_to_int(text: str) -> int:
+    """Pack up to 7 ASCII chars into a 56-bit int (big-endian, NUL-padded)."""
+    try:
+        data = text.encode("ascii")
+    except UnicodeEncodeError as e:
+        raise argparse.ArgumentTypeError(
+            f"--payload-text must be ASCII-only: {e}"
+        ) from e
+    if len(data) > _PAYLOAD_BYTES:
+        raise argparse.ArgumentTypeError(
+            f"--payload-text fits at most {_PAYLOAD_BYTES} ASCII chars "
+            f"(got {len(data)})"
+        )
+    return int.from_bytes(data.ljust(_PAYLOAD_BYTES, b"\x00"), "big")
+
+
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="Compare DCT vs TrustMark video watermarking"
     )
     p.add_argument("--input",           required=True, help="Input MP4 path")
     p.add_argument("--outdir",          default="results", help="Output directory")
-    p.add_argument("--payload-int",     type=lambda x: int(x, 0),
-                   default=0xDEADBEEFCAFEBA, help="56-bit payload as hex (0x…)")
+    payload = p.add_mutually_exclusive_group()
+    payload.add_argument("--payload-int",  type=lambda x: int(x, 0),
+                   default=None, help="56-bit payload as hex (0x…)")
+    payload.add_argument("--payload-text", type=str, default=None,
+                   help=f"ASCII payload, up to {_PAYLOAD_BYTES} chars "
+                        "(NUL-padded, big-endian)")
     p.add_argument("--max-frames",      type=int, default=60)
     p.add_argument("--eval-every-nth",  type=int, default=1)
     p.add_argument("--crf",             type=int, default=23)
@@ -335,8 +358,14 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = _parse_args()
+    if args.payload_text is not None:
+        payload_int = _payload_text_to_int(args.payload_text)
+    elif args.payload_int is not None:
+        payload_int = args.payload_int
+    else:
+        payload_int = 0xDEADBEEFCAFEBA
     cfg = BenchmarkConfig(
-        payload_int=args.payload_int,
+        payload_int=payload_int,
         max_frames=args.max_frames,
         eval_every_nth=args.eval_every_nth,
         crf=args.crf,
