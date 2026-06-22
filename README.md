@@ -140,6 +140,37 @@ Mutually exclusive — pick one form. If neither is given, the default
 | `--no-dct` | Skip the DCT method (run TrustMark only). |
 | `--no-trustmark` | Skip TrustMark (run DCT only, no `trustmark` install required). |
 
+#### Robustness attack suite
+
+After the main benchmark, optionally apply attacks to each watermarked
+output, then decode and score BER per attack. Comma-separated preset
+names (or `all`); empty = skip.
+
+| Option | Description |
+|---|---|
+| `--attacks NAMES` | e.g. `recompress_crf32,resize_0.5,noise_sigma5` or `all`. See preset list below. |
+
+Available presets (from `benchmark.attacks.DEFAULT_PRESETS`):
+
+| Preset | Attack | Effect |
+|---|---|---|
+| `recompress_crf28` / `_crf32` / `_crf36` | re-encode | Harsher H.264 re-compression at the given CRF |
+| `transcode_x265`   | transcode    | Re-encode through libx265 at CRF 28 |
+| `resize_0.75` / `_0.5` | resize   | Downscale → upscale back to original size |
+| `crop_0.8` / `_0.6` | crop        | Center-crop fraction then upscale back to original size |
+| `noise_sigma2` / `_sigma5` / `_sigma10` | noise | Add Gaussian noise (σ on 0–255 scale) |
+| `frame_drop_0.5` | frame drop  | Uniformly drop 50 % of frames |
+
+Each attacked clip is written to `{outdir}/attacks/{method}__{preset}.mp4`,
+and a per-preset / per-method BER table is printed plus saved to
+`benchmark_results.json` under the `"attacks"` key. Reported per cell:
+*per-frame BER mean* / *majority-vote BER across frames*. Lower is better;
+0.5 means the watermark is destroyed (random output).
+
+Note: spatial attacks (resize, crop) are particularly hostile to the DCT
+method because its embedding coordinates depend on the original frame
+layout — this is expected and is the point of the test.
+
 #### Examples
 
 ```bash
@@ -168,6 +199,17 @@ python -m video_watermark.benchmark.run \
 python -m video_watermark.benchmark.run \
     --input clip.mp4 \
     --payload-text "ACME123"
+
+# Full robustness suite — runs every attack preset and prints a BER table
+python -m video_watermark.benchmark.run \
+    --input clip.mp4 \
+    --payload-text "ACME123" \
+    --attacks all
+
+# Just a couple of attacks
+python -m video_watermark.benchmark.run \
+    --input clip.mp4 \
+    --attacks recompress_crf32,resize_0.5,noise_sigma5
 
 # Both methods, near-lossless re-encode (isolate watermark distortion from codec)
 python -m video_watermark.benchmark.run \

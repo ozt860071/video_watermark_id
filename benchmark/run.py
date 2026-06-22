@@ -36,6 +36,12 @@ from typing import Any, Optional
 
 import numpy as np
 
+from video_watermark.benchmark.attacks import (
+    DEFAULT_PRESETS,
+    evaluate_decoded,
+    resolve_preset_names,
+    run_preset,
+)
 from video_watermark.benchmark.metrics import (
     VideoMetrics,
     aggregate_frame_metrics,
@@ -79,6 +85,11 @@ class BenchmarkConfig:
     run_dct: bool = True
     run_trustmark: bool = True
 
+    # Robustness attack suite. List of preset names from
+    # benchmark.attacks.DEFAULT_PRESETS; ["all"] runs every preset.
+    # Empty list = skip attack evaluation.
+    attacks: list[str] = field(default_factory=list)
+
 
 # ---------------------------------------------------------------------------
 # Runner
@@ -103,8 +114,11 @@ class BenchmarkRunner:
         original_frames: list[np.ndarray],
         output_dir: Path,
         input_path: Path,
-    ) -> tuple[VideoMetrics, float]:
-        """Run DCT encode → re-encode → decode → measure. Returns (metrics, wall_s)."""
+    ) -> tuple[VideoMetrics, float, "DCTWatermarker", Path]:
+        """Run DCT encode → re-encode → decode → measure.
+
+        Returns (metrics, encode_wall_s, watermarker, watermarked_path).
+        """
         from video_watermark.utils.video_io import write_video
 
         cfg = self.cfg
@@ -149,15 +163,18 @@ class BenchmarkRunner:
         wall = time.perf_counter() - t0
         metrics = aggregate_frame_metrics("dct", frame_metrics, self._payload_bits, decoded_list)
         log.info("[DCT] Done in %.1f s", wall)
-        return metrics, encode_wall
+        return metrics, encode_wall, wm, wm_path
 
     def _run_trustmark(
         self,
         original_frames: list[np.ndarray],
         output_dir: Path,
         input_path: Path,
-    ) -> tuple[VideoMetrics, float]:
-        """Run TrustMark encode → re-encode → decode → measure."""
+    ) -> tuple[VideoMetrics, float, Any, Path]:
+        """Run TrustMark encode → re-encode → decode → measure.
+
+        Returns (metrics, encode_wall_s, watermarker, watermarked_path).
+        """
         try:
             from video_watermark.trustmark_video.adapter import TrustMarkVideoWatermarker
         except ImportError as e:
@@ -205,7 +222,7 @@ class BenchmarkRunner:
         wall = time.perf_counter() - t0
         metrics = aggregate_frame_metrics("trustmark", frame_metrics, self._payload_bits, decoded_list)
         log.info("[TrustMark] Done in %.1f s", wall)
-        return metrics, encode_wall
+        return metrics, encode_wall, wm, wm_path
 
     # ------------------------------------------------------------------
     # Main entry point
@@ -235,23 +252,126 @@ class BenchmarkRunner:
             "config": {k: str(v) for k, v in self.cfg.__dict__.items()},
         }
 
+        # Track each method's watermarker + watermarked file path so we can
+        # run the attack suite on them once the main benchmark is done.
+        encoded: dict[str, tuple[Any, Path]] = {}
+
         if self.cfg.run_dct:
-            dct_metrics, dct_enc_time = self._run_dct(original_frames, output_dir, input_path)
+            dct_metrics, dct_enc_time, dct_wm, dct_wm_path = self._run_dct(
+                original_frames, output_dir, input_path
+            )
             results["dct"] = dct_metrics.to_dict()
             results["dct"]["encode_wall_s"] = dct_enc_time
             log.info("\n%s", dct_metrics.summary())
+            encoded["dct"] = (dct_wm, dct_wm_path)
 
         if self.cfg.run_trustmark:
             try:
-                tm_metrics, tm_enc_time = self._run_trustmark(original_frames, output_dir, input_path)
+                tm_metrics, tm_enc_time, tm_wm, tm_wm_path = self._run_trustmark(
+                    original_frames, output_dir, input_path
+                )
                 results["trustmark"] = tm_metrics.to_dict()
                 results["trustmark"]["encode_wall_s"] = tm_enc_time
                 log.info("\n%s", tm_metrics.summary())
+                encoded["trustmark"] = (tm_wm, tm_wm_path)
             except ImportError:
                 log.warning("Skipping TrustMark (not installed)")
                 results["trustmark"] = {"error": "trustmark not installed"}
 
+        if self.cfg.attacks and encoded:
+            results["attacks"] = self._run_attacks(encoded, output_dir)
+            self.print_attack_table(results["attacks"])
+
         return results
+
+    # ------------------------------------------------------------------
+    # Attack suite
+    # ------------------------------------------------------------------
+
+    def _run_attacks(
+        self,
+        encoded: dict[str, tuple[Any, Path]],
+        output_dir: Path,
+    ) -> dict[str, dict[str, dict[str, Any]]]:
+        """For each (method, preset) pair: apply attack, decode, score BER.
+
+        Returns
+        -------
+        {method: {preset_name: {"attacked_file": str, "params": dict, ...metrics}}}
+        """
+        try:
+            preset_names = resolve_preset_names(self.cfg.attacks)
+        except KeyError as e:
+            log.error("Attack preset resolution failed: %s", e)
+            return {}
+
+        attacks_dir = output_dir / "attacks"
+        attacks_dir.mkdir(parents=True, exist_ok=True)
+        log.info("Running attack suite: %d preset(s) × %d method(s)",
+                 len(preset_names), len(encoded))
+
+        out: dict[str, dict[str, dict[str, Any]]] = {}
+        for method, (wm, wm_path) in encoded.items():
+            out[method] = {}
+            for preset in preset_names:
+                spec = DEFAULT_PRESETS[preset]
+                attacked_path = attacks_dir / f"{method}__{preset}.mp4"
+                log.info("[attack:%s] %s → %s", method, preset, attacked_path.name)
+                try:
+                    run_preset(preset, wm_path, attacked_path,
+                               max_frames=self.cfg.max_frames)
+                    stats = evaluate_decoded(
+                        attacked_path,
+                        watermarker=wm,
+                        expected_bits=self._payload_bits,
+                        max_frames=self.cfg.max_frames,
+                        eval_every_nth=self.cfg.eval_every_nth,
+                    )
+                except Exception as e:
+                    log.error("[attack:%s] %s failed: %s", method, preset, e)
+                    out[method][preset] = {
+                        "attack": spec["attack"],
+                        "params": spec["params"],
+                        "error":  str(e),
+                    }
+                    continue
+                out[method][preset] = {
+                    "attack":        spec["attack"],
+                    "params":        spec["params"],
+                    "attacked_file": str(attacked_path),
+                    **stats,
+                }
+        return out
+
+    def print_attack_table(self, attacks: dict[str, dict[str, dict[str, Any]]]) -> None:
+        """Print a table of BER per (preset × method)."""
+        methods = list(attacks.keys())
+        if not methods:
+            return
+        presets = list(next(iter(attacks.values())).keys())
+
+        col_w = max(20, max((len(p) for p in presets), default=20))
+        cell_w = 16
+        header = f"{'Attack preset':<{col_w}}" + "".join(
+            f"{m:>{cell_w}}" for m in methods
+        )
+        print()
+        print("=" * len(header))
+        print(header)
+        print("-" * len(header))
+        for preset in presets:
+            cells = []
+            for m in methods:
+                d = attacks[m].get(preset, {})
+                if "error" in d:
+                    cells.append(f"{'ERR':>{cell_w}}")
+                else:
+                    ber  = d.get("ber_mean", float("nan"))
+                    maj  = d.get("majority_vote_ber", float("nan"))
+                    cells.append(f"{ber:>7.3f}/{maj:<7.3f}"[:cell_w].rjust(cell_w))
+            print(f"{preset:<{col_w}}" + "".join(cells))
+        print("=" * len(header))
+        print("Cells show: per-frame BER mean / majority-vote BER  (0.000 = perfect, 0.5 = random)")
 
     def print_comparison(self, results: dict[str, Any]) -> None:
         """Print a side-by-side comparison table to stdout."""
@@ -353,6 +473,10 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--trustmark-strength", type=float, default=1.0)
     p.add_argument("--no-dct",          action="store_true")
     p.add_argument("--no-trustmark",    action="store_true")
+    p.add_argument("--attacks",         default="",
+                   help="Comma-separated robustness attack presets (or 'all'). "
+                        "See benchmark.attacks.DEFAULT_PRESETS for options. "
+                        "Empty (default) skips attack evaluation.")
     return p.parse_args()
 
 
@@ -377,6 +501,7 @@ def main() -> None:
         trustmark_strength=args.trustmark_strength,
         run_dct=not args.no_dct,
         run_trustmark=not args.no_trustmark,
+        attacks=[s.strip() for s in args.attacks.split(",") if s.strip()],
     )
     runner = BenchmarkRunner(cfg)
     results = runner.run(args.input, args.outdir)
