@@ -344,14 +344,19 @@ class BenchmarkRunner:
         return out
 
     def print_attack_table(self, attacks: dict[str, dict[str, dict[str, Any]]]) -> None:
-        """Print a table of BER per (preset × method)."""
+        """Print a per-(preset × method) recovery table.
+
+        Each cell shows  `{recovered}/{total}  BER={ber_mean:.3f}` —
+        i.e. how many frames perfectly recovered the watermark out of
+        those evaluated, alongside the mean per-frame BER.
+        """
         methods = list(attacks.keys())
         if not methods:
             return
         presets = list(next(iter(attacks.values())).keys())
 
         col_w = max(20, max((len(p) for p in presets), default=20))
-        cell_w = 16
+        cell_w = 22
         header = f"{'Attack preset':<{col_w}}" + "".join(
             f"{m:>{cell_w}}" for m in methods
         )
@@ -366,12 +371,17 @@ class BenchmarkRunner:
                 if "error" in d:
                     cells.append(f"{'ERR':>{cell_w}}")
                 else:
+                    n_ok = d.get("n_frames_exact_match", 0)
+                    n    = d.get("n_frames_evaluated", 0)
                     ber  = d.get("ber_mean", float("nan"))
-                    maj  = d.get("majority_vote_ber", float("nan"))
-                    cells.append(f"{ber:>7.3f}/{maj:<7.3f}"[:cell_w].rjust(cell_w))
+                    cell = f"{n_ok:>3d}/{n:<3d} BER={ber:.3f}"
+                    cells.append(cell.rjust(cell_w))
             print(f"{preset:<{col_w}}" + "".join(cells))
         print("=" * len(header))
-        print("Cells show: per-frame BER mean / majority-vote BER  (0.000 = perfect, 0.5 = random)")
+        print("Cells: recovered/total frames | mean per-frame BER "
+              "(0.000 = perfect, 0.5 = random).")
+        print("Full per-frame trace is saved under "
+              "results['attacks'][method][preset]['per_frame'].")
 
     def print_comparison(self, results: dict[str, Any]) -> None:
         """Print a side-by-side comparison table to stdout."""

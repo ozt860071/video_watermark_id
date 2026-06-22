@@ -264,9 +264,11 @@ def evaluate_decoded(
         bit_accuracy_mean, ber_per_bit (list[float]), majority_vote_ber
     """
     n_bits = len(expected_bits)
-    per_frame_ber: list[float] = []
+    # Per-frame trace: every frame the attacked file yields gets one entry,
+    # so downstream analysis can spot frames that are systematically easier
+    # or harder to recover under each attack.
+    per_frame: list[dict[str, Any]] = []
     decoded_stack: list[np.ndarray] = []
-    n_exact = 0
 
     for idx, frame in read_frames(attacked_path, max_frames=max_frames):
         if idx % eval_every_nth != 0:
@@ -280,11 +282,13 @@ def evaluate_decoded(
             )
         decoded_stack.append(bits)
         ber = float(np.mean(bits != expected_bits))
-        per_frame_ber.append(ber)
-        if ber == 0.0:
-            n_exact += 1
+        per_frame.append({
+            "frame_idx": int(idx),
+            "ber":       ber,
+            "success":   bool(ber == 0.0),
+        })
 
-    n = len(per_frame_ber)
+    n = len(per_frame)
     if n == 0:
         return {
             "n_frames_evaluated": 0,
@@ -297,9 +301,11 @@ def evaluate_decoded(
             "bit_accuracy_mean": float("nan"),
             "ber_per_bit": [float("nan")] * n_bits,
             "majority_vote_ber": float("nan"),
+            "per_frame": [],
         }
 
-    bers = np.asarray(per_frame_ber)
+    bers = np.asarray([f["ber"] for f in per_frame])
+    n_exact = sum(1 for f in per_frame if f["success"])
     stacked = np.stack(decoded_stack, axis=0)
     ber_per_bit = np.mean(stacked != expected_bits[None, :], axis=0)
     # Soft majority vote over frames, then BER against expected.
@@ -317,4 +323,5 @@ def evaluate_decoded(
         "bit_accuracy_mean":   float(1.0 - bers.mean()),
         "ber_per_bit":         ber_per_bit.tolist(),
         "majority_vote_ber":   maj_ber,
+        "per_frame":           per_frame,
     }

@@ -213,7 +213,13 @@ class DCTWatermarker:
         r  = y               + 1.402    * cr
         g  = y - 0.344136  * cb - 0.714136 * cr
         b  = y + 1.772     * cb
-        return np.clip(np.stack([r, g, b], axis=-1), 0, 255).astype(np.uint8)
+        # Round before clipping/casting: `astype(uint8)` truncates toward zero
+        # (254.9 → 254), which biased Y by ~−0.5 on decode and flipped chip
+        # bits at delta=30. Rounding makes the YCbCr→RGB→YCbCr roundtrip
+        # symmetric and recovers the watermark exactly on lossless paths.
+        return np.clip(
+            np.round(np.stack([r, g, b], axis=-1)), 0, 255
+        ).astype(np.uint8)
 
     # ------------------------------------------------------------------
     # Block tiling
