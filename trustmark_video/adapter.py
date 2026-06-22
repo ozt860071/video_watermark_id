@@ -163,7 +163,13 @@ class TrustMarkVideoWatermarker:
             )
         secret  = self._bits_to_secret(payload_bits)
         pil_in  = Image.fromarray(frame_rgb, mode="RGB")
-        pil_out = self._tm.encode(pil_in, secret, WM_STRENGTH=self.strength)
+        # MODE='binary' on both encode and decode — otherwise encode defaults
+        # to MODE='text' which packs the secret as ASCII text in the available
+        # bits, while decode(MODE='binary') reads them as raw bits, giving a
+        # silent layout mismatch (~23/56 systematic errors).
+        pil_out = self._tm.encode(
+            pil_in, secret, MODE="binary", WM_STRENGTH=self.strength
+        )
         return np.array(pil_out, dtype=np.uint8)
 
     def decode_frame(
