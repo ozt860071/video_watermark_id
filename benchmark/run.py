@@ -80,6 +80,7 @@ class BenchmarkConfig:
     # TrustMark settings
     trustmark_model: str = "Q"
     trustmark_strength: float = 1.0
+    trustmark_device: str | None = None  # None = auto (MPS / CUDA / CPU)
 
     # Whether to run each method
     run_dct: bool = True
@@ -186,9 +187,11 @@ class BenchmarkRunner:
             model_type=cfg.trustmark_model,
             strength=cfg.trustmark_strength,
             verbose=False,
+            device=cfg.trustmark_device,
         )
 
-        log.info("[TrustMark] Encoding %d frames (model=%s) …", len(original_frames), cfg.trustmark_model)
+        log.info("[TrustMark] Encoding %d frames (model=%s device=%s) …",
+                 len(original_frames), cfg.trustmark_model, wm.device)
         t0 = time.perf_counter()
 
         wm_frames: list[np.ndarray] = []
@@ -481,6 +484,9 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--dct-key",         default="video_watermark_key")
     p.add_argument("--trustmark-model", default="Q", choices=["B","C","P","Q"])
     p.add_argument("--trustmark-strength", type=float, default=1.0)
+    p.add_argument("--trustmark-device", default=None,
+                   help="PyTorch device for TrustMark (mps/cuda/cpu). "
+                        "Default: auto-detect (MPS on Apple Silicon).")
     p.add_argument("--no-dct",          action="store_true")
     p.add_argument("--no-trustmark",    action="store_true")
     p.add_argument("--attacks",         default="",
@@ -509,6 +515,7 @@ def main() -> None:
         dct_secret_key=args.dct_key,
         trustmark_model=args.trustmark_model,
         trustmark_strength=args.trustmark_strength,
+        trustmark_device=args.trustmark_device,
         run_dct=not args.no_dct,
         run_trustmark=not args.no_trustmark,
         attacks=[s.strip() for s in args.attacks.split(",") if s.strip()],

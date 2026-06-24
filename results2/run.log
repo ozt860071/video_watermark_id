@@ -1,0 +1,163 @@
+INFO Payload (first 16 bits): 0100000101000010 ...
+INFO Input: ToS-1920_60s.mp4  1920x800  24.0 fps  codec=h264
+INFO Loading up to 9999 frames …
+INFO Loaded 1432 frames
+INFO [DCT] Encoding 1432 frames …
+INFO Wrote 1432 frames to results2/dct_watermarked.mp4
+INFO [DCT] Decoding from re-encoded file …
+INFO [DCT] Done in 331.3 s
+INFO 
+Method: dct
+  Frames evaluated : 1432
+  Exact match rate : 96.7%
+  PSNR             : 56.86 ± 0.91 dB  (min 56.00)
+  SSIM             : 0.9986 ± 0.0004  (min 0.9975)
+  Mean |Δpx|       : 0.033 / 255
+  BER              : 0.0051 ± 0.0297  (bit accuracy 99.49%)
+  Norm correlation : 0.9897
+INFO [TrustMark] Encoding 1432 frames (model=Q) …
+INFO Wrote 1432 frames to results2/trustmark_watermarked.mp4
+INFO [TrustMark] Decoding from re-encoded file …
+INFO [TrustMark] Done in 355.9 s
+INFO 
+Method: trustmark
+  Frames evaluated : 1432
+  Exact match rate : 90.9%
+  PSNR             : 47.20 ± 4.15 dB  (min 42.39)
+  SSIM             : 0.9965 ± 0.0015  (min 0.9936)
+  Mean |Δpx|       : 0.488 / 255
+  BER              : 0.0310 ± 0.0976  (bit accuracy 96.90%)
+  Norm correlation : 0.9381
+INFO Running attack suite: 12 preset(s) × 2 method(s)
+INFO [attack:dct] recompress_crf28 → dct__recompress_crf28.mp4
+INFO Wrote 1432 frames to results2/attacks/dct__recompress_crf28.mp4
+INFO [attack:dct] recompress_crf32 → dct__recompress_crf32.mp4
+INFO Wrote 1432 frames to results2/attacks/dct__recompress_crf32.mp4
+INFO [attack:dct] recompress_crf36 → dct__recompress_crf36.mp4
+INFO Wrote 1432 frames to results2/attacks/dct__recompress_crf36.mp4
+INFO [attack:dct] transcode_x265 → dct__transcode_x265.mp4
+x265 [info]: HEVC encoder version 4.2+1-e444744
+x265 [info]: build info [Mac OS X][clang 15.0.0][64 bit] 8bit+10bit+12bit
+x265 [info]: using cpu capabilities: NEON Neon_DotProd Neon_I8MM
+x265 [info]: Main profile, Level-4 (Main tier)
+x265 [info]: Thread pool created using 10 threads
+x265 [info]: Slices                              : 1
+x265 [info]: frame threads / pool features       : 3 / wpp(13 rows)
+x265 [info]: Coding QT: max CU size, min CU size : 64 / 8
+x265 [info]: Residual QT: max TU size, max depth : 32 / 1 inter / 1 intra
+x265 [info]: ME / range / subpel / merge         : hex / 57 / 2 / 3
+x265 [info]: Keyframe min / max / scenecut / bias  : 24 / 250 / 40 / 5.00 
+x265 [info]: Lookahead / bframes / badapt        : 20 / 4 / 2
+x265 [info]: b-pyramid / weightp / weightb       : 1 / 1 / 0
+x265 [info]: References / ref-limit  cu / depth  : 3 / off / on
+x265 [info]: AQ: mode / str / qg-size / cu-tree  : 2 / 1.0 / 32 / 1
+x265 [info]: Rate Control / qCompress            : CRF-28.0 / 0.60
+x265 [info]: tools: rd=3 psy-rd=2.00 early-skip rskip mode=1 signhide tmvp
+x265 [info]: tools: b-intra strong-intra-smoothing lslices=5 deblock sao
+INFO Wrote 1432 frames to results2/attacks/dct__transcode_x265.mp4
+x265 [info]: frame I:     14, Avg QP:25.85  kb/s: 12581.58
+x265 [info]: frame P:    384, Avg QP:27.84  kb/s: 2536.46 
+x265 [info]: frame B:   1034, Avg QP:34.21  kb/s: 376.19  
+x265 [info]: Weighted P-Frames: Y:4.7% UV:0.0%
+
+encoded 1432 frames in 13.87s (103.22 fps), 1074.81 kb/s, Avg QP:32.42
+INFO [attack:dct] resize_0.75 → dct__resize_0.75.mp4
+INFO Wrote 1432 frames to results2/attacks/dct__resize_0.75.mp4
+INFO [attack:dct] resize_0.5 → dct__resize_0.5.mp4
+INFO Wrote 1432 frames to results2/attacks/dct__resize_0.5.mp4
+INFO [attack:dct] crop_0.8 → dct__crop_0.8.mp4
+INFO Wrote 1432 frames to results2/attacks/dct__crop_0.8.mp4
+INFO [attack:dct] crop_0.6 → dct__crop_0.6.mp4
+INFO Wrote 1432 frames to results2/attacks/dct__crop_0.6.mp4
+INFO [attack:dct] noise_sigma2 → dct__noise_sigma2.mp4
+INFO Wrote 1432 frames to results2/attacks/dct__noise_sigma2.mp4
+INFO [attack:dct] noise_sigma5 → dct__noise_sigma5.mp4
+INFO Wrote 1432 frames to results2/attacks/dct__noise_sigma5.mp4
+INFO [attack:dct] noise_sigma10 → dct__noise_sigma10.mp4
+INFO Wrote 1432 frames to results2/attacks/dct__noise_sigma10.mp4
+INFO [attack:dct] frame_drop_0.5 → dct__frame_drop_0.5.mp4
+INFO Wrote 716 frames to results2/attacks/dct__frame_drop_0.5.mp4
+INFO [attack:trustmark] recompress_crf28 → trustmark__recompress_crf28.mp4
+INFO Wrote 1432 frames to results2/attacks/trustmark__recompress_crf28.mp4
+INFO [attack:trustmark] recompress_crf32 → trustmark__recompress_crf32.mp4
+INFO Wrote 1432 frames to results2/attacks/trustmark__recompress_crf32.mp4
+INFO [attack:trustmark] recompress_crf36 → trustmark__recompress_crf36.mp4
+INFO Wrote 1432 frames to results2/attacks/trustmark__recompress_crf36.mp4
+INFO [attack:trustmark] transcode_x265 → trustmark__transcode_x265.mp4
+x265 [info]: HEVC encoder version 4.2+1-e444744
+x265 [info]: build info [Mac OS X][clang 15.0.0][64 bit] 8bit+10bit+12bit
+x265 [info]: using cpu capabilities: NEON Neon_DotProd Neon_I8MM
+x265 [info]: Main profile, Level-4 (Main tier)
+x265 [info]: Thread pool created using 10 threads
+x265 [info]: Slices                              : 1
+x265 [info]: frame threads / pool features       : 3 / wpp(13 rows)
+x265 [info]: Coding QT: max CU size, min CU size : 64 / 8
+x265 [info]: Residual QT: max TU size, max depth : 32 / 1 inter / 1 intra
+x265 [info]: ME / range / subpel / merge         : hex / 57 / 2 / 3
+x265 [info]: Keyframe min / max / scenecut / bias  : 24 / 250 / 40 / 5.00 
+x265 [info]: Lookahead / bframes / badapt        : 20 / 4 / 2
+x265 [info]: b-pyramid / weightp / weightb       : 1 / 1 / 0
+x265 [info]: References / ref-limit  cu / depth  : 3 / off / on
+x265 [info]: AQ: mode / str / qg-size / cu-tree  : 2 / 1.0 / 32 / 1
+x265 [info]: Rate Control / qCompress            : CRF-28.0 / 0.60
+x265 [info]: tools: rd=3 psy-rd=2.00 early-skip rskip mode=1 signhide tmvp
+x265 [info]: tools: b-intra strong-intra-smoothing lslices=5 deblock sao
+INFO Wrote 1432 frames to results2/attacks/trustmark__transcode_x265.mp4
+x265 [info]: frame I:     14, Avg QP:25.92  kb/s: 12418.57
+x265 [info]: frame P:    384, Avg QP:27.86  kb/s: 2543.03 
+x265 [info]: frame B:   1034, Avg QP:34.19  kb/s: 379.21  
+x265 [info]: Weighted P-Frames: Y:4.7% UV:0.0%
+
+encoded 1432 frames in 14.43s (99.27 fps), 1077.15 kb/s, Avg QP:32.41
+INFO [attack:trustmark] resize_0.75 → trustmark__resize_0.75.mp4
+INFO Wrote 1432 frames to results2/attacks/trustmark__resize_0.75.mp4
+INFO [attack:trustmark] resize_0.5 → trustmark__resize_0.5.mp4
+INFO Wrote 1432 frames to results2/attacks/trustmark__resize_0.5.mp4
+INFO [attack:trustmark] crop_0.8 → trustmark__crop_0.8.mp4
+INFO Wrote 1432 frames to results2/attacks/trustmark__crop_0.8.mp4
+INFO [attack:trustmark] crop_0.6 → trustmark__crop_0.6.mp4
+INFO Wrote 1432 frames to results2/attacks/trustmark__crop_0.6.mp4
+INFO [attack:trustmark] noise_sigma2 → trustmark__noise_sigma2.mp4
+INFO Wrote 1432 frames to results2/attacks/trustmark__noise_sigma2.mp4
+INFO [attack:trustmark] noise_sigma5 → trustmark__noise_sigma5.mp4
+INFO Wrote 1432 frames to results2/attacks/trustmark__noise_sigma5.mp4
+INFO [attack:trustmark] noise_sigma10 → trustmark__noise_sigma10.mp4
+INFO Wrote 1432 frames to results2/attacks/trustmark__noise_sigma10.mp4
+INFO [attack:trustmark] frame_drop_0.5 → trustmark__frame_drop_0.5.mp4
+INFO Wrote 716 frames to results2/attacks/trustmark__frame_drop_0.5.mp4
+INFO Results saved to results2/benchmark_results.json
+
+================================================================
+Attack preset                          dct             trustmark
+----------------------------------------------------------------
+recompress_crf28        604/1432 BER=0.118   1267/1432 BER=0.039
+recompress_crf32        147/1432 BER=0.211   1068/1432 BER=0.086
+recompress_crf36          1/1432 BER=0.311    626/1432 BER=0.190
+transcode_x265          238/1432 BER=0.199   1193/1432 BER=0.057
+resize_0.75             489/1432 BER=0.141   1301/1432 BER=0.031
+resize_0.5                0/1432 BER=0.340   1300/1432 BER=0.031
+crop_0.8                  0/1432 BER=0.342   1262/1432 BER=0.040
+crop_0.6                  0/1432 BER=0.339      0/1432 BER=0.341
+noise_sigma2           1214/1432 BER=0.037   1298/1432 BER=0.032
+noise_sigma5           1151/1432 BER=0.043   1299/1432 BER=0.032
+noise_sigma10          1070/1432 BER=0.050   1291/1432 BER=0.034
+frame_drop_0.5           615/716 BER=0.015     650/716 BER=0.031
+================================================================
+Cells: recovered/total frames | mean per-frame BER (0.000 = perfect, 0.5 = random).
+Full per-frame trace is saved under results['attacks'][method][preset]['per_frame'].
+
+==============================================================
+Metric                                    DCT       TrustMark
+--------------------------------------------------------------
+PSNR mean (dB)                          56.86           47.20
+PSNR min (dB)                           56.00           42.39
+SSIM mean                              0.9986          0.9965
+SSIM min                               0.9975          0.9936
+Mean |Δpx|                              0.033           0.488
+BER mean                               0.0051          0.0310
+Bit accuracy mean                      99.49%          96.90%
+Exact match rate                       96.72%          90.85%
+Norm correlation mean                  0.9897          0.9381
+Encode wall (s)                          44.5            58.4
+Frames evaluated                         1432            1432
+==============================================================

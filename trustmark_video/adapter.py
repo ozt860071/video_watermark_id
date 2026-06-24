@@ -81,6 +81,7 @@ class TrustMarkVideoWatermarker:
         model_type: str = "Q",
         strength: float = 1.0,
         verbose: bool = False,
+        device: str | None = None,
     ) -> None:
         if not _TRUSTMARK_AVAILABLE:
             raise ImportError(_INSTALL_MSG)
@@ -93,11 +94,28 @@ class TrustMarkVideoWatermarker:
         self.model_type = model_type
         self.strength   = strength
 
+        # TrustMark's own auto-detect is broken (self.device = device
+        # immediately overwrites the MPS/CUDA detection). Pick a device
+        # explicitly: caller override > MPS on Apple Silicon > CPU.
+        if device is None:
+            try:
+                import torch
+                if torch.backends.mps.is_available():
+                    device = "mps"
+                elif torch.cuda.is_available():
+                    device = "cuda"
+                else:
+                    device = "cpu"
+            except ImportError:
+                device = "cpu"
+        self.device = device
+
         enc_enum = getattr(TrustMark.Encoding, self._ENCODING)
         self._tm = TrustMark(
             verbose=verbose,
             model_type=model_type,
             encoding_type=enc_enum,
+            device=device,
         )
 
     # ------------------------------------------------------------------
