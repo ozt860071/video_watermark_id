@@ -5,5 +5,5 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
-results/
 *.mp4
+~$*.docx
