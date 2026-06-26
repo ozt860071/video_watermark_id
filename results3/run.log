@@ -1,0 +1,35 @@
+
+================================================================
+Attack preset                          dct             trustmark
+----------------------------------------------------------------
+recompress_crf28        604/1432 BER=0.118   1267/1432 BER=0.039
+recompress_crf32        147/1432 BER=0.211   1068/1432 BER=0.086
+recompress_crf36          1/1432 BER=0.311    626/1432 BER=0.190
+transcode_x265          238/1432 BER=0.199   1193/1432 BER=0.057
+resize_0.75             489/1432 BER=0.141   1301/1432 BER=0.031
+resize_0.5                0/1432 BER=0.340   1300/1432 BER=0.031
+crop_0.8                  0/1432 BER=0.342   1262/1432 BER=0.040
+crop_0.6                  0/1432 BER=0.339      0/1432 BER=0.341
+noise_sigma2           1214/1432 BER=0.037   1298/1432 BER=0.032
+noise_sigma5           1151/1432 BER=0.043   1299/1432 BER=0.032
+noise_sigma10          1070/1432 BER=0.050   1291/1432 BER=0.034
+frame_drop_0.5           615/716 BER=0.015     650/716 BER=0.031
+================================================================
+Cells: recovered/total frames | mean per-frame BER (0.000 = perfect, 0.5 = random).
+Full per-frame trace is saved under results['attacks'][method][preset]['per_frame'].
+
+==============================================================
+Metric                                    DCT       TrustMark
+--------------------------------------------------------------
+PSNR mean (dB)                          56.86           47.20
+PSNR min (dB)                           56.00           42.39
+SSIM mean                              0.9986          0.9965
+SSIM min                               0.9975          0.9936
+Mean |Δpx|                              0.033           0.488
+BER mean                               0.0051          0.0310
+Bit accuracy mean                      99.49%          96.90%
+Exact match rate                       96.72%          90.85%
+Norm correlation mean                  0.9897          0.9381
+Encode wall (s)                          44.3            57.4
+Frames evaluated                         1432            1432
+==============================================================

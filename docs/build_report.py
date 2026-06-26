@@ -373,14 +373,19 @@ def main():
     ])
     add_para(
         doc,
-        "Compute footprint: end-to-end wall time was ~30 minutes on Apple "
-        "Silicon (CPU TrustMark inference dominated; MPS support was "
-        "added after this run — see §10). DCT encode ran at ~31 ms/frame, "
-        "TrustMark encode at ~41 ms/frame; per-attack decode took 10–60 s "
-        "(DCT) or 60–90 s (TrustMark) for the full 1432 frames. The "
-        "attack-MP4 outputs totalled ~3.3 GB, dominated by the "
-        "noise-attack files (~440 MB each — Gaussian noise defeats "
-        "H.264's predictive compression).",
+        "Compute footprint: end-to-end wall time was ~29 minutes on Apple "
+        "Silicon with TrustMark running on the M-series GPU via PyTorch "
+        "MPS (model=Q, device=mps). DCT encode ran at ~31 ms/frame "
+        "(44.3 s for 1432 frames; DCT does not use PyTorch), TrustMark "
+        "encode at ~40 ms/frame (57.4 s); per-attack decode took 10–60 s "
+        "(DCT) or 50–80 s (TrustMark) for the full 1432 frames. Switching "
+        "TrustMark from CPU to MPS shaved only ~3% off total wall time — "
+        "per-frame inference at batch size 1 is bottlenecked by Python / "
+        "PIL marshalling and per-call host↔device transfers, leaving the "
+        "GPU largely idle; batching frames would be required to expose a "
+        "real MPS speed-up. The attack-MP4 outputs totalled ~1.6 GB, "
+        "dominated by the noise-attack files (~420 MB each at σ=10 — "
+        "Gaussian noise defeats H.264's predictive compression).",
         italic=True,
     )
 
